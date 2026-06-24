@@ -1,0 +1,131 @@
+### Health check
+GET http://localhost:3000/health
+
+### 1. Create a note
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "title": "My first note",
+  "content": "This is the content of my first note",
+  "tags": ["zettelkasten", "testing"]
+}
+
+### 2. Create a note with wikilink reference
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "title": "Note with reference",
+  "content": "This references [[note-id-123]] in the content",
+  "tags": ["references"]
+}
+
+### 3. Create a note with minimal fields (no tags)
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "title": "Minimal note",
+  "content": "Just content, no tags"
+}
+
+### 4. Create a note — validation error (empty title)
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "title": "",
+  "content": "Some content"
+}
+
+### 5. Create a note — validation error (missing content)
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "title": "Missing content"
+}
+
+### 6. Create a note — validation error (title too long)
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "title": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  "content": "Content"
+}
+
+### 7. List all notes
+GET http://localhost:3000/api/notes
+
+### 8. Search notes by text
+GET http://localhost:3000/api/notes?q=reference
+
+### 9. Search notes by exact title
+GET http://localhost:3000/api/notes?title=My first note
+
+### 10. Filter notes by tag
+GET http://localhost:3000/api/notes?tag=references
+
+### 11. Get note by ID (replace {{noteId}} with an actual UUID)
+GET http://localhost:3000/api/notes/{{noteId}}
+
+### 12. Get note by ID — not found
+GET http://localhost:3000/api/notes/00000000-0000-0000-0000-000000000000
+
+### 13. Update a note (replace {{noteId}} with an actual UUID)
+PUT http://localhost:3000/api/notes/{{noteId}}
+Content-Type: application/json
+
+{
+  "title": "Updated title",
+  "tags": ["updated"]
+}
+
+### 14. Update a note — validation error (empty title)
+PUT http://localhost:3000/api/notes/{{noteId}}
+Content-Type: application/json
+
+{
+  "title": ""
+}
+
+### 15. Update a note — not found
+PUT http://localhost:3000/api/notes/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "title": "Wont work"
+}
+
+### 16. Delete a note (replace {{noteId}} with an actual UUID)
+DELETE http://localhost:3000/api/notes/{{noteId}}
+
+### 17. Delete a note — not found
+DELETE http://localhost:3000/api/notes/00000000-0000-0000-0000-000000000000
+
+### 18. Bulk-replace references globally
+PATCH http://localhost:3000/api/notes/any-id/references
+Content-Type: application/json
+
+{
+  "oldId": "note-id-123",
+  "newId": "new-note-id-456"
+}
+
+### 19. Bulk-replace references — validation error (missing oldId)
+PATCH http://localhost:3000/api/notes/any-id/references
+Content-Type: application/json
+
+{
+  "newId": "new-id"
+}
+
+### 20. Bulk-replace references — validation error (missing newId)
+PATCH http://localhost:3000/api/notes/any-id/references
+Content-Type: application/json
+
+{
+  "oldId": "old-id"
+}
