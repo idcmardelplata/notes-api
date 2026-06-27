@@ -1,36 +1,47 @@
-import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import pg from 'pg';
 
-const DB_PATH = join(process.cwd(), 'data.db');
+const { Pool } = pg;
 
-let db: SqlJsDatabase | null = null;
+let pool: pg.Pool | null = null;
 
-export async function getDatabase(): Promise<SqlJsDatabase> {
-  if (db) return db;
+const RETRY_DELAY = 1000;
+const MAX_RETRIES = 10;
 
-  const SQL = await initSqlJs();
+async function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  if (existsSync(DB_PATH)) {
-    const buffer = readFileSync(DB_PATH);
-    db = new SQL.Database(buffer);
-  } else {
-    db = new SQL.Database();
+export async function getDatabase(): Promise<pg.Pool> {
+  if (pool) return pool;
+
+  pool = new Pool({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    database: process.env.DB_NAME || 'notes_api',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+  });
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await pool.query('SELECT 1');
+      return pool;
+    } catch (err) {
+      if (attempt === MAX_RETRIES) {
+        pool = null;
+        throw err;
+      }
+      console.log(`DB connection attempt ${attempt}/${MAX_RETRIES} failed, retrying in ${RETRY_DELAY}ms...`);
+      await wait(RETRY_DELAY);
+    }
   }
 
-  return db;
+  throw new Error('Failed to connect to database');
 }
 
-export function saveDatabase(): void {
-  if (!db) return;
-  const data = db.save();
-  writeFileSync(DB_PATH, Buffer.from(data));
-}
-
-export function closeDatabase(): void {
-  if (db) {
-    saveDatabase();
-    db.close();
-    db = null;
+export async function closeDatabase(): Promise<void> {
+  if (pool) {
+    await pool.end();
+    pool = null;
   }
 }

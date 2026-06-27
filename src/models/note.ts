@@ -14,7 +14,7 @@ export interface NoteRow {
   id: string;
   title: string;
   content: string;
-  tags: string;
+  tags: unknown;
   created_at: string;
   updated_at: string;
 }
@@ -41,13 +41,13 @@ export type UpdateNoteDTO = z.infer<typeof UpdateNoteSchema>;
 export type UpdateReferencesDTO = z.infer<typeof UpdateReferencesSchema>;
 
 export function rowToNote(row: NoteRow): Note {
-  const parsed = JSON.parse(row.tags) as string[];
+  const tags = typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags;
   return {
     id: row.id,
     title: row.title,
     content: row.content,
-    tags: Array.isArray(parsed) ? parsed : [],
-    references: [], // populated separately
+    tags: Array.isArray(tags) ? tags : [],
+    references: [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

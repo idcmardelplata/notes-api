@@ -1,14 +1,14 @@
-import type { Database } from 'sql.js';
+import type { Pool } from 'pg';
 
-export function runMigrations(db: Database): void {
-  db.run(`
+export async function runMigrations(db: Pool): Promise<void> {
+  await db.query(`
     CREATE TABLE IF NOT EXISTS notes (
       id         TEXT PRIMARY KEY,
-      title      TEXT NOT NULL,
+      title      VARCHAR(500) NOT NULL,
       content    TEXT NOT NULL,
-      tags       TEXT NOT NULL DEFAULT '[]',
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      tags       JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
 }

@@ -14,10 +14,9 @@ export default [
       '@typescript-eslint': tsPlugin,
     },
     rules: {
-      // Activa las reglas recomendadas de TypeScript
       ...tsPlugin.configs.recommended.rules,
-      // Añade tus reglas personalizadas aquí
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
   // Desactiva las reglas de ESLint que entren en conflicto con Prettier

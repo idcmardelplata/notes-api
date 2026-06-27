@@ -6,7 +6,7 @@ const PORT = parseInt(process.env.PORT ?? '3000', 10);
 
 async function main() {
   const db = await getDatabase();
-  runMigrations(db);
+  await runMigrations(db);
 
   const app = createApp(db);
 
@@ -14,10 +14,10 @@ async function main() {
     console.log(`Notes API running on http://localhost:${PORT}`);
   });
 
-  const shutdown = () => {
+  const shutdown = async () => {
     console.log('\nShutting down...');
     server.close();
-    closeDatabase();
+    await closeDatabase();
     process.exit(0);
   };
 
