@@ -20,14 +20,39 @@ import { dag, Container, Directory, object, func } from "@dagger.io/dagger"
 export class NotesApi {
   @func()
   async ci(source: Directory): Promise<string> {
+    const postgres = dag
+      .container()
+      .from("postgres:16-alpine")
+      .withEnvVariable("POSTGRES_DB", "notes_api_test")
+      .withEnvVariable("POSTGRES_USER", "postgres")
+      .withEnvVariable("POSTGRES_PASSWORD", "postgres")
+      .withExposedPort(5432)
+      .asService()
+
     const base = dag
       .container()
       .from("node:22-alpine")
       .withMountedDirectory("/app", source)
       .withWorkdir("/app")
+      .withServiceBinding("db", postgres)
+      .withEnvVariable("DB_HOST", "db")
+      .withEnvVariable("DB_PORT", "5432")
+      .withEnvVariable("DB_USER", "postgres")
+      .withEnvVariable("DB_PASSWORD", "postgres")
+      .withEnvVariable("DB_NAME", "notes_api_test")
+      .withEnvVariable("DB_TEST_HOST", "db")
+      .withEnvVariable("DB_TEST_PORT", "5432")
+      .withEnvVariable("DB_TEST_NAME", "notes_api_test")
+      .withEnvVariable("DB_TEST_USER", "postgres")
+      .withEnvVariable("DB_TEST_PASSWORD", "postgres")
       .withExec(["npm", "install"])
 
-    const build = base.withExec(["npm", "run", "build"])
+    const withDb = base.withExec([
+      "sh", "-c",
+      "apk add --no-cache postgresql-client && until pg_isready -h db -U postgres; do sleep 1; done && echo 'PostgreSQL is ready!'"
+    ])
+
+    const build = withDb.withExec(["npm", "run", "build"])
     const buildOut = await build.stdout()
 
     const lint = build.withExec(["npm", "run", "lint", "--", "--fix"])

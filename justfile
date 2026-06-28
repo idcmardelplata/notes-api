@@ -24,7 +24,22 @@ typecheck:
 ci:
     dagger call ci --source=.
 
-ci-local: build lint test typecheck
+ci-local:
+    @just _ensure-db
+    @just build lint test typecheck
+    @just _stop-db
+
+# Starts the PostgreSQL container and waits for it to be ready
+_ensure-db:
+    docker compose up -d db
+    @echo "Waiting for PostgreSQL..."
+    @sh -c 'while ! docker compose exec -T db pg_isready -U postgres 2>/dev/null; do sleep 1; done'
+    @echo "PostgreSQL is ready"
+    -docker compose exec -T db psql -U postgres -c "CREATE DATABASE notes_api_test;" 2>/dev/null
+
+# Stops the database container
+_stop-db:
+    docker compose rm -sf db
 
 # Docker
 
