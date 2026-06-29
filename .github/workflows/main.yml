@@ -16,4 +16,4 @@ jobs:
         with:
           version: "latest"
           verb: "call"
-          args: ci --source=.
+          args: ci --source=. --infisical-client-id env:INFISICAL_CLIENT_ID --infisical-client-secret env:INFISICAL_CLIENT_SECRET --infisical-project-id "6eb5705a-ff7b-4a24-9c2f-abc519975099"
