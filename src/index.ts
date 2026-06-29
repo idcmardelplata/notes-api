@@ -1,6 +1,7 @@
 import { getDatabase, closeDatabase } from './database/connection.js';
 import { runMigrations } from './database/migrations.js';
 import { createApp } from './app.js';
+import { setupFeatureFlags } from './flags/setup.js';
 
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
 
@@ -8,7 +9,8 @@ async function main() {
   const db = await getDatabase();
   await runMigrations(db);
 
-  const app = createApp(db);
+  const featureFlagClient = await setupFeatureFlags();
+  const app = createApp(db, featureFlagClient);
 
   const server = app.listen(PORT, () => {
     console.log(`Notes API running on http://localhost:${PORT}`);

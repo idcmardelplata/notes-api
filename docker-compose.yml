@@ -15,6 +15,18 @@ services:
       timeout: 5s
       retries: 5
 
+  relay-proxy:
+    image: gofeatureflag/go-feature-flag:latest
+    ports:
+      - "1031:1031"
+    volumes:
+      - .:/goff
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:1031/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build: .
     restart: unless-stopped
@@ -27,9 +39,12 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       PORT: "3000"
+      FLAG_ENDPOINT: http://relay-proxy:1031
     depends_on:
       db:
         condition: service_healthy
+      relay-proxy:
+        condition: service_started
 
 volumes:
   pgdata:
