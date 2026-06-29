@@ -14,6 +14,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@openfeature/go-feature-flag-provider": "^1.3.1",
+    "@openfeature/go-feature-flag-web-provider": "^0.2.9",
+    "@openfeature/server-sdk": "^1.22.0",
+    "@openfeature/web-sdk": "^1.9.0",
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "pg": "^8.13.0",
