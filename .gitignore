@@ -291,3 +291,5 @@ dist
 .svelte-kit
 
 # End of https://www.toptal.com/developers/gitignore/api/node
+session_infisical.md
+.env.example
