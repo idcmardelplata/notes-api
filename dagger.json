@@ -4,5 +4,12 @@
   "sdk": {
     "source": "typescript"
   },
+  "dependencies": [
+    {
+      "name": "infisical",
+      "source": "github.com/Infisical/infisical-dagger@main",
+      "pin": "98042321db6b3995f2f0d874c61990c3c73d7d30"
+    }
+  ],
   "source": ".dagger"
 }

@@ -14,12 +14,21 @@
  * if appropriate. All modules should have a short description.
  */
 
-import { dag, Container, Directory, object, func } from "@dagger.io/dagger"
+import { dag, Container, Directory, Secret, object, func } from "@dagger.io/dagger"
 
 @object()
 export class NotesApi {
   @func()
-  async ci(source: Directory): Promise<string> {
+  async ci(
+    source: Directory,
+    infisicalClientId: Secret,
+    infisicalClientSecret: Secret,
+    infisicalProjectId: string,
+    infisicalEnvironment: string = "dev",
+    infisicalSecretPath: string = "/"
+  ): Promise<string> {
+    const infisical = dag.infisical().withUniversalAuth(infisicalClientId, infisicalClientSecret)
+
     const postgres = dag
       .container()
       .from("postgres:16-alpine")
@@ -35,16 +44,16 @@ export class NotesApi {
       .withMountedDirectory("/app", source)
       .withWorkdir("/app")
       .withServiceBinding("db", postgres)
-      .withEnvVariable("DB_HOST", "db")
-      .withEnvVariable("DB_PORT", "5432")
-      .withEnvVariable("DB_USER", "postgres")
-      .withEnvVariable("DB_PASSWORD", "postgres")
-      .withEnvVariable("DB_NAME", "notes_api_test")
-      .withEnvVariable("DB_TEST_HOST", "db")
-      .withEnvVariable("DB_TEST_PORT", "5432")
-      .withEnvVariable("DB_TEST_NAME", "notes_api_test")
-      .withEnvVariable("DB_TEST_USER", "postgres")
-      .withEnvVariable("DB_TEST_PASSWORD", "postgres")
+      .withSecretVariable("DB_HOST", infisical.getSecretByName("DB_HOST", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_PORT", infisical.getSecretByName("DB_PORT", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_USER", infisical.getSecretByName("DB_USER", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_PASSWORD", infisical.getSecretByName("DB_PASSWORD", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_NAME", infisical.getSecretByName("DB_NAME", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_TEST_HOST", infisical.getSecretByName("DB_TEST_HOST", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_TEST_PORT", infisical.getSecretByName("DB_TEST_PORT", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_TEST_NAME", infisical.getSecretByName("DB_TEST_NAME", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_TEST_USER", infisical.getSecretByName("DB_TEST_USER", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
+      .withSecretVariable("DB_TEST_PASSWORD", infisical.getSecretByName("DB_TEST_PASSWORD", infisicalProjectId, infisicalEnvironment, infisicalSecretPath))
       .withExec(["npm", "install"])
 
     const withDb = base.withExec([
